@@ -1,33 +1,66 @@
-from typing import Generic, TypeVar
+#3. Crea una clase genérica Catalogo<T> que almacene productos o libros. 
+#a) Agrega métodos para agregar y buscar elemento 
+#b) Prueba el catálogo con libros 
+#c) Prueba el catálogo con productos 
+from typing import TypeVar, Generic, List
 
-# Definimos un tipo genérico T
 T = TypeVar('T')
 
-# Clase genérica Caja
-class Caja(Generic[T]):
+class Catalogo(Generic[T]):
     def __init__(self):
-        self.contenido: T = None  # Inicializa el contenido
+        self.elementos: List[T] = []
 
-    def guardar(self, objeto: T):
-        self.contenido = objeto
+    def agregar(self, elemento: T):
+        self.elementos.append(elemento)
 
-    def obtener(self) -> T:
-        return self.contenido
+    def buscar(self, elemento: T) -> bool:
+        return elemento in self.elementos
 
-# Programa principal
-def main():
-    # Caja para strings
-    caja_texto = Caja[str]()
-    caja_texto.guardar("Hola Mundo")
+    def mostrar_todo(self):
+        for elem in self.elementos:
+            print(elem)
+class Libro:
+    def __init__(self, titulo: str, autor: str):
+        self.titulo = titulo
+        self.autor = autor
 
-    # Caja para enteros
-    caja_numero = Caja[int]()
-    caja_numero.guardar(12345)
+    def __eq__(self, other):
+        return isinstance(other, Libro) and self.titulo == other.titulo and self.autor == other.autor
 
-    # Mostrar contenido
-    print("Contenido de caja_texto:", caja_texto.obtener())
-    print("Contenido de caja_numero:", caja_numero.obtener())
+    def __hash__(self):
+        return hash((self.titulo, self.autor))
 
-# Ejecutar
-if __name__ == "__main__":
-    main()
+    def __str__(self):
+        return f"Libro: {self.titulo} - Autor: {self.autor}"
+class Producto:
+    def __init__(self, nombre: str, precio: float):
+        self.nombre = nombre
+        self.precio = precio
+
+    def __eq__(self, other):
+        return isinstance(other, Producto) and self.nombre == other.nombre and self.precio == other.precio
+
+    def __hash__(self):
+        return hash((self.nombre, self.precio))
+
+    def __str__(self):
+        return f"Producto: {self.nombre} - Precio: Bs {self.precio}"
+
+catalogo_libros = Catalogo[Libro]()
+libro1 = Libro("Cien años de soledad", "Gabriel García Márquez")
+libro2 = Libro("1984", "George Orwell")
+catalogo_libros.agregar(libro1)
+catalogo_libros.agregar(libro2)
+print("Catálogo de libros:")
+catalogo_libros.mostrar_todo()
+print("¿Está el libro '1984'? ", catalogo_libros.buscar(Libro("1984", "George Orwell")))
+
+catalogo_productos = Catalogo[Producto]()
+prod1 = Producto("Laptop", 3999.99)
+prod2 = Producto("Mouse", 40)
+catalogo_productos.agregar(prod1)
+catalogo_productos.agregar(prod2)
+print("\nCatálogo de productos:")
+catalogo_productos.mostrar_todo()
+print("¿Está el producto 'Mouse'? ", catalogo_productos.buscar(Producto("Mouse", 40)))
+
