@@ -1,60 +1,55 @@
-
+//1. Sea el siguiente diagrama de clases: 
+//a) Implementa el método guardarEmpleado(Empleado e) para almacenar empleados.
+//b) Implementa buscaEmpleado(String n) a traves del nombre, para ver los datos del Empleado n. 
+//c) Implementa mayorSalario(float sueldo), que devuelva al primer empleado con sueldo mayor al ingresado. 
 import java.io.*;
 import java.util.*;
 
-class Cliente {
-    private int id;
+class Empleado {
     private String nombre;
-    private int telefono;
+    private int edad;
+    private double salario;
 
-    public Cliente(int id, String nombre, int telefono) {
-        this.id = id;
+    public Empleado(String nombre, int edad, double salario) {
         this.nombre = nombre;
-        this.telefono = telefono;
-    }
-
-    public int getId() {
-        return id;
+        this.edad = edad;
+        this.salario = salario;
     }
 
     public String getNombre() {
         return nombre;
     }
 
-    public int getTelefono() {
-        return telefono;
+    public int getEdad() {
+        return edad;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public void setTelefono(int telefono) {
-        this.telefono = telefono;
+    public double getSalario() {
+        return salario;
     }
 
     @Override
     public String toString() {
-        return "ID: " + id + ", Nombre: " + nombre + ", Teléfono: " + telefono;
+        return "Nombre: " + nombre + ", Edad: " + edad + ", Salario: " + salario;
     }
 
     public String toLinea() {
-        return id + "," + nombre + "," + telefono;
+        return nombre + "," + edad + "," + salario;
     }
 
-    public static Cliente fromLinea(String linea) {
+    public static Empleado fromLinea(String linea) {
         String[] partes = linea.split(",");
-        int id = Integer.parseInt(partes[0]);
-        String nombre = partes[1];
-        int telefono = Integer.parseInt(partes[2]);
-        return new Cliente(id, nombre, telefono);
+        String nombre = partes[0];
+        int edad = Integer.parseInt(partes[1]);
+        double salario = Double.parseDouble(partes[2]);
+        return new Empleado(nombre, edad, salario);
     }
 }
 
-class ArchivoCliente {
+class ArchivoEmpleado {
     private String nomA;
 
-    public ArchivoCliente(String nomA) {
+    public ArchivoEmpleado(String nomA) {
         this.nomA = nomA;
         File archivo = new File(nomA);
         if (!archivo.exists()) {
@@ -63,19 +58,25 @@ class ArchivoCliente {
     }
 
     public void crearArchivo() {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(nomA))) {
-            // Archivo vacío
+        try {
+            File archivo = new File(nomA);
+            File carpeta = archivo.getParentFile();
+            if (carpeta != null && !carpeta.exists()) {
+                carpeta.mkdirs();
+            }
+            PrintWriter writer = new PrintWriter(new FileWriter(nomA));
+            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private List<Cliente> leerClientes() {
-        List<Cliente> lista = new ArrayList<>();
+    private List<Empleado> leerEmpleados() {
+        List<Empleado> lista = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(nomA))) {
             String linea;
             while ((linea = br.readLine()) != null) {
-                lista.add(Cliente.fromLinea(linea));
+                lista.add(Empleado.fromLinea(linea));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -83,97 +84,66 @@ class ArchivoCliente {
         return lista;
     }
 
-    private void guardarTodos(List<Cliente> clientes) {
+    private void guardarTodos(List<Empleado> empleados) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(nomA))) {
-            for (Cliente c : clientes) {
-                writer.println(c.toLinea());
+            for (Empleado e : empleados) {
+                writer.println(e.toLinea());
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void guardarCliente(Cliente cliente) {
-        List<Cliente> clientes = leerClientes();
-        for (Cliente c : clientes) {
-            if (c.getId() == cliente.getId()) {
-                System.out.println("El cliente ya existe.");
-                return;
-            }
-        }
-        clientes.add(cliente);
-        guardarTodos(clientes);
-        System.out.println("Cliente guardado.");
+    public void guardarEmpleado(Empleado e) {
+        List<Empleado> empleados = leerEmpleados();
+        empleados.add(e);
+        guardarTodos(empleados);
+        System.out.println("Empleado guardado correctamente.");
     }
 
-    public Cliente buscarCliente(int id) {
-        List<Cliente> clientes = leerClientes();
-        for (Cliente c : clientes) {
-            if (c.getId() == id) {
-                return c;
+    public Empleado buscaEmpleado(String nombre) {
+        List<Empleado> empleados = leerEmpleados();
+        for (Empleado e : empleados) {
+            if (e.getNombre().equalsIgnoreCase(nombre)) {
+                return e;
             }
         }
         return null;
     }
 
-    public String buscarCelularCliente(int id) {
-        Cliente cliente = buscarCliente(id);
-        if (cliente != null) {
-            return cliente + " (Celular: " + cliente.getTelefono() + ")";
-        }
-        return "Cliente no encontrado.";
-    }
-
-    public void actualizarCliente(Cliente nuevoCliente) {
-        List<Cliente> clientes = leerClientes();
-        for (int i = 0; i < clientes.size(); i++) {
-            if (clientes.get(i).getId() == nuevoCliente.getId()) {
-                clientes.set(i, nuevoCliente);
-                guardarTodos(clientes);
-                System.out.println("Cliente actualizado.");
-                return;
+    public Empleado mayorSalario(double sueldo) {
+        List<Empleado> empleados = leerEmpleados();
+        for (Empleado e : empleados) {
+            if (e.getSalario() > sueldo) {
+                return e;
             }
         }
-        System.out.println("Cliente no encontrado para actualizar.");
-    }
-
-    public void eliminarCliente(int id) {
-        List<Cliente> clientes = leerClientes();
-        int sizeAntes = clientes.size();
-        clientes.removeIf(c -> c.getId() == id);
-        if (clientes.size() == sizeAntes) {
-            System.out.println("Cliente no encontrado para eliminar.");
-        } else {
-            guardarTodos(clientes);
-            System.out.println("Cliente eliminado.");
-        }
+        return null;
     }
 }
 
 public class Main {
     public static void main(String[] args) {
-        ArchivoCliente archivo = new ArchivoCliente("clientes.txt");
+        ArchivoEmpleado archivo = new ArchivoEmpleado("empleados.txt");
 
-        Cliente c1 = new Cliente(1, "Carlos Gómez", 123456789);
-        Cliente c2 = new Cliente(2, "Lucía López", 987654321);
-        Cliente c3 = new Cliente(3, "Ronald Gutierrez", 8311043);
-        Cliente c4 = new Cliente(4, "Paul Mamani", 1855853);
+        archivo.guardarEmpleado(new Empleado("Ana", 30, 3500.50));
+        archivo.guardarEmpleado(new Empleado("Luis", 45, 5200.75));
+        archivo.guardarEmpleado(new Empleado("Carla", 28, 4000.00));
 
-        archivo.guardarCliente(c1);
-        archivo.guardarCliente(c2);
-        archivo.guardarCliente(c3);
-        archivo.guardarCliente(c4);
+        String nombre = "Carla";
+        Empleado emp = archivo.buscaEmpleado(nombre);
+        if (emp != null) {
+            System.out.println("\nEmpleado encontrado: " + emp);
+        } else {
+            System.out.println("\nEmpleado con nombre " + nombre + " no encontrado.");
+        }
 
-        System.out.println(archivo.buscarCelularCliente(1));
-        System.out.println(archivo.buscarCelularCliente(4));
-
-        Cliente c1Actualizado = new Cliente(1, "Carlos Gutierrez.", 111222333);
-        archivo.actualizarCliente(c1Actualizado);
-
-        System.out.println(archivo.buscarCelularCliente(2));
-        Cliente encontrado = archivo.buscarCliente(3);
-        if (encontrado != null) {
-            System.out.println("Encontrado: " + encontrado);
+        double salario_limite = 4000;
+        Empleado empMayor = archivo.mayorSalario(salario_limite);
+        if (empMayor != null) {
+            System.out.println("\nPrimer empleado con salario mayor a " + salario_limite + ": " + empMayor);
+        } else {
+            System.out.println("\nNo se encontró empleado con salario mayor a " + salario_limite);
         }
     }
 }
